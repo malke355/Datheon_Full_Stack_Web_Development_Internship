@@ -2,14 +2,14 @@
 
 > **Status:** Not deployed yet — replace the URL below after you publish.
 
-**Live site:** `https://YOUR-DEMO-URL-HERE` _(placeholder)_
+**Live site:** https://task1developerportfolio.vercel.app/ _(placeholder)_
 
 Expected URLs once live:
 
 | Host | Typical URL |
 | --- | --- |
 | GitHub Pages | `https://malke355.github.io/Datheon_Full_Stack_Web_Development_Internship/task1-developer-portfolio/` |
-| Vercel | `https://<project-name>.vercel.app` (Root Directory = `task1-developer-portfolio`) |
+| Vercel | `https://task1developerportfolio.vercel.app/ (Root Directory = `task1-developer-portfolio`) |
 
 ---
 
