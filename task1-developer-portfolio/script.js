@@ -9,21 +9,22 @@
   /* ---------- Project data ---------- */
   const projects = [
     {
-      id: "campus-events",
-      title: "Campus Events Board",
+      id: "portfolio-lab",
+      title: "Portfolio Lab",
       description:
-        "A responsive event listing page with filter chips and a clean card layout. Built to practice semantic HTML, CSS Grid, and accessible interactive controls.",
-      image: "assets/project-events.svg",
-      imageAlt: "Abstract illustration of a campus events board interface",
-      tags: ["HTML", "CSS", "JavaScript"],
-      demo: "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship",
-      github: "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship",
+        "Task 1 — this site. A personal portfolio built with plain HTML, CSS, and vanilla JS: theming, project modals, scroll reveals, and a mobile-first layout.",
+      image: "assets/project-portfolio.svg",
+      imageAlt: "Abstract illustration of a personal portfolio layout",
+      tags: ["HTML", "CSS", "Vanilla JS"],
+      demo: "https://task1developerportfolio.vercel.app/",
+      github:
+        "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship/tree/main/task1-developer-portfolio",
     },
     {
       id: "task-tracker",
       title: "Taskflow",
       description:
-        "A dynamic task manager with categories, due dates, filters, search, drag-and-drop reorder, and JSON backup. Built with plain HTML, CSS, and vanilla JS — data stays in localStorage.",
+        "Task 2 — a dynamic task manager with categories, due dates, filters, search, drag-and-drop reorder, and JSON backup. Plain HTML/CSS/JS with localStorage.",
       image: "assets/project-tasks.svg",
       imageAlt: "Abstract illustration of a task checklist interface",
       tags: ["JavaScript", "CSS", "localStorage"],
@@ -32,27 +33,28 @@
         "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship/tree/main/task2-task-manager",
     },
     {
-      id: "weather-glance",
-      title: "Weather Glance",
+      id: "atmos-weather",
+      title: "Atmos",
       description:
-        "A small weather lookup UI that fetches data from a public API and presents conditions in a simple, readable layout with loading and error states.",
+        "Task 3 — real-time weather and a 5-day forecast via OpenWeatherMap. Client UI plus a thin proxy so the API key stays in .env, never in the browser.",
       image: "assets/project-weather.svg",
       imageAlt: "Abstract illustration of a weather dashboard",
-      tags: ["JavaScript", "Fetch API", "CSS"],
-      demo: "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship",
-      github: "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship",
+      tags: ["JavaScript", "OpenWeatherMap", "Node"],
+      demo: "https://weathertask3.vercel.app/",
+      github:
+        "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship/tree/main/task3-weather-forecast",
     },
     {
-      id: "portfolio-lab",
-      title: "Portfolio Lab",
+      id: "meridian-store",
+      title: "Meridian",
       description:
-        "This site — a personal portfolio built with plain HTML, CSS, and vanilla JS. Explores theming, modals, scroll reveals, and mobile-first layout patterns.",
-      image: "assets/project-portfolio.svg",
-      imageAlt: "Abstract illustration of a personal portfolio layout",
-      tags: ["HTML", "CSS", "Vanilla JS"],
-      demo: "https://task1developerportfolio.vercel.app/",
+        "Task 4 — FakeStoreAPI product catalog with search, category filters, a slide-out cart (tax/shipping math), and simulated checkout. Pure client-side vanilla JS.",
+      image: "assets/project-events.svg",
+      imageAlt: "Abstract illustration of a shopping catalog interface",
+      tags: ["JavaScript", "FakeStoreAPI", "CSS Grid"],
+      demo: "https://ecommerce-nine-omega-76.vercel.app/",
       github:
-        "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship/tree/main/task1-developer-portfolio",
+        "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship/tree/main/task4-ecommerce-store",
     },
   ];
 

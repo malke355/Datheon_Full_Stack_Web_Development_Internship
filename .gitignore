@@ -7,7 +7,8 @@
 # Dependencies
 **/node_modules/
 
-# OS / editor
+# OS / editor / local deploy metadata
 .DS_Store
 Thumbs.db
 *.log
+**/.vercel/

@@ -1,8 +1,8 @@
 # Live Demo
 
-**Live site:https://ecommerce-nine-omega-76.vercel.app/
+**Live site:** [https://ecommerce-nine-omega-76.vercel.app/](https://ecommerce-nine-omega-76.vercel.app/)
 
-Deployed as a **static site** on Vercel (Root Directory = https://ecommerce-nine-omega-76.vercel.app/ No API key, no build step.
+Deployed as a **static site** on Vercel (Root Directory = `task4-ecommerce-store`). No API key, no build step.
 
 Local demo: [http://127.0.0.1:8084](http://127.0.0.1:8084) (`npx serve -l 8084`)
 
