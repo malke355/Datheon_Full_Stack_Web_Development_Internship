@@ -129,12 +129,19 @@
             <option value="Study">Study</option>
           </select>
         </div>
+
+        <div class="toolbar-actions" role="group" aria-label="Task utilities">
+          <button type="button" class="btn btn-ghost btn-compact" id="clear-completed">Clear completed</button>
+          <button type="button" class="btn btn-ghost btn-compact" id="export-tasks">Export JSON</button>
+          <button type="button" class="btn btn-ghost btn-compact" id="import-tasks">Import JSON</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+        </div>
       </section>
 
       <section class="task-board" aria-labelledby="list-heading">
         <div class="list-header">
           <h2 id="list-heading" class="section-title">Your tasks</h2>
-          <p class="hint" id="dnd-hint">Drag the handle to reorder. Changes save automatically.</p>
+          <p class="hint" id="dnd-hint">Drag the handle or use ↑/↓ to reorder. Changes save automatically.</p>
         </div>
 
         <ul id="task-list" class="task-list" aria-live="polite"></ul>
@@ -150,7 +157,10 @@
     </footer>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    <span id="toast-message"></span>
+    <button type="button" id="toast-action" class="toast-action" hidden>Undo</button>
+  </div>
 
   <script src="script.js" defer></script>
 </body>
