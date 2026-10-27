@@ -10,7 +10,7 @@ Deployed on Vercel (Root Directory = `task1-developer-portfolio`).
 
 Static personal portfolio for **Melkamu Teshome**, built for the Datheon Full Stack Web Development Internship. Plain HTML, CSS, and vanilla JavaScript — no frameworks, no build step.
 
-> **Before sharing publicly:** swap placeholder contacts (`melkamu@example.com`, GitHub, LinkedIn) in `index.html`, `script.js`, and this README.
+> **Before sharing publicly:** swap remaining placeholder contacts (`melkamu@example.com`, LinkedIn) in `index.html` and this README. GitHub links already point to `malke355`.
 
 ## Overview
 

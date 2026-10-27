@@ -11,5 +11,5 @@
   <rect x="160" y="296" width="480" height="48" rx="8" fill="#1A5C5F"/>
   <circle cx="188" cy="320" r="10" fill="none" stroke="#7EB8B5" stroke-width="3"/>
   <rect x="210" y="312" width="300" height="14" rx="3" fill="#E8F0EF" opacity="0.55"/>
-  <text x="400" y="460" text-anchor="middle" fill="#9AABA8" font-family="system-ui,sans-serif" font-size="18">Local Task Tracker</text>
+  <text x="400" y="460" text-anchor="middle" fill="#9AABA8" font-family="system-ui,sans-serif" font-size="18">Taskflow</text>
 </svg>

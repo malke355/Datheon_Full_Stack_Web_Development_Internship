@@ -16,19 +16,20 @@
       image: "assets/project-events.svg",
       imageAlt: "Abstract illustration of a campus events board interface",
       tags: ["HTML", "CSS", "JavaScript"],
-      demo: "https://github.com/melkamu",
-      github: "https://github.com/melkamu",
+      demo: "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship",
+      github: "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship",
     },
     {
       id: "task-tracker",
-      title: "Local Task Tracker",
+      title: "Taskflow",
       description:
-        "A lightweight to-do app that stores tasks in localStorage. Focused on form handling, list rendering, and keeping the UI keyboard-friendly.",
+        "A dynamic task manager with categories, due dates, filters, search, drag-and-drop reorder, and JSON backup. Built with plain HTML, CSS, and vanilla JS — data stays in localStorage.",
       image: "assets/project-tasks.svg",
       imageAlt: "Abstract illustration of a task checklist interface",
       tags: ["JavaScript", "CSS", "localStorage"],
-      demo: "https://github.com/melkamu",
-      github: "https://github.com/melkamu",
+      demo: "https://taskmanager2-sepia.vercel.app/",
+      github:
+        "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship/tree/main/task2-task-manager",
     },
     {
       id: "weather-glance",
@@ -38,8 +39,8 @@
       image: "assets/project-weather.svg",
       imageAlt: "Abstract illustration of a weather dashboard",
       tags: ["JavaScript", "Fetch API", "CSS"],
-      demo: "https://github.com/melkamu",
-      github: "https://github.com/melkamu",
+      demo: "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship",
+      github: "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship",
     },
     {
       id: "portfolio-lab",
@@ -49,8 +50,9 @@
       image: "assets/project-portfolio.svg",
       imageAlt: "Abstract illustration of a personal portfolio layout",
       tags: ["HTML", "CSS", "Vanilla JS"],
-      demo: "./index.html",
-      github: "https://github.com/melkamu",
+      demo: "https://task1developerportfolio.vercel.app/",
+      github:
+        "https://github.com/malke355/Datheon_Full_Stack_Web_Development_Internship/tree/main/task1-developer-portfolio",
     },
   ];
 
