@@ -1,0 +1,16 @@
+{
+  "name": "atmos-weather-forecast",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Atmos — Datheon Task 3 weather app (OpenWeatherMap via local proxy)",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}

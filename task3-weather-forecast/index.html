@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-sky="clear-day">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Atmos — simple weather app. Search a city for current conditions and a 5-day forecast via OpenWeatherMap." />
+  <meta name="theme-color" id="meta-theme-color" content="#2f7ea0" />
+  <title>Atmos | Weather App</title>
+
+  <!-- Apply saved theme before paint to avoid a flash -->
+  <script>
+    (function () {
+      try {
+        var key = "atmos.theme.v1";
+        var stored = localStorage.getItem(key);
+        var theme =
+          stored === "light" || stored === "dark"
+            ? stored
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="sky-layer" aria-hidden="true"></div>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">AT</span>
+        <div class="brand-text">
+          <h1 class="brand-name">Atmos</h1>
+          <p class="brand-tagline">Weather · Forecast · Telemetry</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button
+          type="button"
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Toggle color theme"
+          title="Toggle theme"
+        >
+          <span class="theme-icon theme-icon--sun" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </span>
+          <span class="theme-icon theme-icon--moon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/></svg>
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main" class="app-main">
+      <!-- Search -->
+      <section class="search-panel" aria-labelledby="search-heading">
+        <h2 id="search-heading" class="section-title">Search a city</h2>
+        <form id="search-form" class="search-form" novalidate>
+          <div class="field field--grow">
+            <label for="city-input">City</label>
+            <input
+              type="search"
+              id="city-input"
+              name="city"
+              placeholder="e.g. Addis Ababa, London, Tokyo"
+              maxlength="80"
+              required
+              autocomplete="off"
+              enterkeyhint="search"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary" id="search-btn">
+            <span class="btn-label">Get weather</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+        <p class="search-hint">Units are metric (°C, m/s). Powered by OpenWeatherMap.</p>
+      </section>
+
+      <!-- Status / errors / loading copy -->
+      <p id="status-message" class="status-message" role="status" aria-live="polite" hidden></p>
+
+      <!-- Current weather -->
+      <section id="current-panel" class="current-panel" aria-labelledby="current-heading" hidden>
+        <div class="current-top">
+          <div class="current-place">
+            <h2 id="current-heading" class="place-name"></h2>
+            <p class="place-meta" id="place-meta"></p>
+          </div>
+          <div class="current-temp-block">
+            <img id="condition-icon" class="condition-icon" src="" alt="" width="96" height="96" />
+            <p class="current-temp"><span id="temp-value"></span><span class="unit">°C</span></p>
+            <p class="condition-label" id="condition-label"></p>
+          </div>
+        </div>
+
+        <ul class="metrics" aria-label="Current conditions">
+          <li class="metric">
+            <span class="metric-label">Feels like</span>
+            <span class="metric-value" id="feels-like"></span>
+          </li>
+          <li class="metric">
+            <span class="metric-label">Humidity</span>
+            <span class="metric-value" id="humidity"></span>
+          </li>
+          <li class="metric">
+            <span class="metric-label">Wind</span>
+            <span class="metric-value" id="wind"></span>
+          </li>
+          <li class="metric">
+            <span class="metric-label">Pressure</span>
+            <span class="metric-value" id="pressure"></span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 5-day forecast -->
+      <section id="forecast-panel" class="forecast-panel" aria-labelledby="forecast-heading" hidden>
+        <h2 id="forecast-heading" class="section-title">5-day forecast</h2>
+        <div id="forecast-grid" class="forecast-grid" role="list"></div>
+      </section>
+
+      <section id="empty-state" class="empty-state">
+        <p class="empty-title">Search to load the weather</p>
+        <p class="empty-copy">Enter a city above for current temperature, conditions, and a five-day outlook.</p>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Atmos · Datheon Internship Task 3 · OpenWeatherMap</p>
+    </footer>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

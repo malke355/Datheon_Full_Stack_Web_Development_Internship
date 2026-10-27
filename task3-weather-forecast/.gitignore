@@ -1,0 +1,12 @@
+# Local secrets — never commit API keys
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Logs / OS
+npm-debug.log*
+.DS_Store
+Thumbs.db
