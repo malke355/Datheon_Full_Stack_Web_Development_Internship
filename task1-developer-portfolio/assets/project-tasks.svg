@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="Task tracker placeholder">
+  <rect width="800" height="500" fill="#152628"/>
+  <rect x="120" y="60" width="560" height="360" rx="16" fill="#0E3A3C"/>
+  <rect x="160" y="100" width="200" height="24" rx="6" fill="#E89B3C"/>
+  <rect x="160" y="160" width="480" height="48" rx="8" fill="#1A5C5F"/>
+  <circle cx="188" cy="184" r="10" fill="#C8F03C" opacity="0.85"/>
+  <rect x="210" y="176" width="280" height="14" rx="3" fill="#E8F0EF" opacity="0.75"/>
+  <rect x="160" y="228" width="480" height="48" rx="8" fill="#1A5C5F"/>
+  <circle cx="188" cy="252" r="10" fill="none" stroke="#7EB8B5" stroke-width="3"/>
+  <rect x="210" y="244" width="240" height="14" rx="3" fill="#E8F0EF" opacity="0.55"/>
+  <rect x="160" y="296" width="480" height="48" rx="8" fill="#1A5C5F"/>
+  <circle cx="188" cy="320" r="10" fill="none" stroke="#7EB8B5" stroke-width="3"/>
+  <rect x="210" y="312" width="300" height="14" rx="3" fill="#E8F0EF" opacity="0.55"/>
+  <text x="400" y="460" text-anchor="middle" fill="#9AABA8" font-family="system-ui,sans-serif" font-size="18">Local Task Tracker</text>
+</svg>

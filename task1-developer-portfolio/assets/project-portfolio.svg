@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="Portfolio lab placeholder">
+  <rect width="800" height="500" fill="#EEF3F2"/>
+  <rect x="0" y="0" width="800" height="64" fill="#0E3A3C"/>
+  <rect x="40" y="22" width="80" height="20" rx="4" fill="#C9782A"/>
+  <rect x="480" y="24" width="40" height="16" rx="3" fill="#7EB8B5" opacity="0.7"/>
+  <rect x="532" y="24" width="40" height="16" rx="3" fill="#7EB8B5" opacity="0.7"/>
+  <rect x="584" y="24" width="40" height="16" rx="3" fill="#7EB8B5" opacity="0.7"/>
+  <rect x="640" y="24" width="40" height="16" rx="3" fill="#7EB8B5" opacity="0.7"/>
+  <rect x="60" y="120" width="320" height="36" rx="6" fill="#0F1F22"/>
+  <rect x="60" y="172" width="260" height="16" rx="4" fill="#4A5C5F" opacity="0.6"/>
+  <rect x="60" y="220" width="120" height="40" rx="8" fill="#C9782A"/>
+  <rect x="196" y="220" width="120" height="40" rx="8" fill="none" stroke="#0E3A3C" stroke-width="2"/>
+  <rect x="460" y="110" width="280" height="260" rx="16" fill="#DCE6E4"/>
+  <circle cx="600" cy="220" r="48" fill="#0E3A3C" opacity="0.25"/>
+  <text x="400" y="460" text-anchor="middle" fill="#4A5C5F" font-family="system-ui,sans-serif" font-size="18">Portfolio Lab</text>
+</svg>
