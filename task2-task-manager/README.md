@@ -1,12 +1,10 @@
 # Live Demo
 
-**Live site:** _Coming soon — replace this URL after you deploy_
-
+**Live site:https://taskmanager2-sepia.vercel.app/
 Example placeholders:
 
 - GitHub Pages: `https://<your-username>.github.io/<your-repo>/task2-task-manager/`
-- Vercel / Netlify: `https://<your-project>.vercel.app` (or Netlify URL), with root set to `task2-task-manager/`
-
+- Vercel / Netlify:https://taskmanager2-sepia.vercel.app/
 ---
 
 # Taskflow — Dynamic Task Manager & Productivity Tracker
