@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Meridian — modern e-commerce storefront with FakeStoreAPI catalog, filters, and a slide-out shopping cart." />
+  <meta name="theme-color" content="#0F2E2F" />
+  <title>Meridian | Product Catalog &amp; Shopping Cart</title>
+
+  <script>
+    (function () {
+      try {
+        var key = "meridian.theme.v1";
+        var stored = localStorage.getItem(key);
+        var theme =
+          stored === "light" || stored === "dark"
+            ? stored
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" id="brand-link">
+        <span class="brand-mark" aria-hidden="true">MD</span>
+        <span class="brand-text">
+          <span class="brand-name">Meridian</span>
+          <span class="brand-tagline">Catalog · Cart · Checkout</span>
+        </span>
+      </a>
+
+      <div class="header-actions">
+        <button
+          type="button"
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Toggle color theme"
+          title="Toggle theme"
+        >
+          <span class="theme-icon theme-icon--sun" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </span>
+          <span class="theme-icon theme-icon--moon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/></svg>
+          </span>
+        </button>
+
+        <button type="button" class="cart-trigger" id="cart-open" aria-expanded="false" aria-controls="cart-drawer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/>
+          </svg>
+          <span class="cart-trigger-label">Cart</span>
+          <span class="cart-badge" id="cart-badge" hidden>0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="site-main">
+    <section class="hero" id="top">
+      <p class="hero-eyebrow">Datheon Internship · Task 4</p>
+      <h1 class="hero-title">Shop the Meridian catalog</h1>
+      <p class="hero-copy">Live products from FakeStoreAPI — filter by category, search titles, and check out from a slide-out cart.</p>
+    </section>
+
+    <section class="toolbar" aria-label="Search and filters">
+      <div class="field field--search">
+        <label for="product-search">Search products</label>
+        <input type="search" id="product-search" placeholder="Search by title…" autocomplete="off" />
+      </div>
+
+      <div class="filter-group" role="group" aria-label="Filter by category">
+        <button type="button" class="filter-btn is-active" data-category="all" aria-pressed="true">All</button>
+        <button type="button" class="filter-btn" data-category="electronics" aria-pressed="false">Electronics</button>
+        <button type="button" class="filter-btn" data-category="jewelry" aria-pressed="false">Jewelry</button>
+        <button type="button" class="filter-btn" data-category="clothing" aria-pressed="false">Clothing</button>
+      </div>
+    </section>
+
+    <div id="status-message" class="status-message" role="status" aria-live="polite">
+      <span id="status-text">Loading catalog…</span>
+      <button type="button" class="btn btn-ghost btn-compact" id="status-retry" hidden>Retry</button>
+    </div>
+
+    <section class="catalog" aria-labelledby="catalog-heading">
+      <div class="catalog-head">
+        <h2 id="catalog-heading" class="section-title">Products</h2>
+        <p class="catalog-count" id="catalog-count"></p>
+      </div>
+      <div id="product-grid" class="product-grid"></div>
+      <p id="empty-catalog" class="empty-state" hidden>No products match this search or filter.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Meridian · Datheon Internship Task 4 · Data from FakeStoreAPI</p>
+  </footer>
+
+  <!-- Cart backdrop + drawer -->
+  <div class="cart-backdrop" id="cart-backdrop" hidden></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-labelledby="cart-heading" aria-hidden="true">
+    <div class="cart-header">
+      <h2 id="cart-heading">Your cart</h2>
+      <button type="button" class="icon-btn" id="cart-close" aria-label="Close cart">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="cart-body">
+      <ul id="cart-list" class="cart-list"></ul>
+      <p id="cart-empty" class="cart-empty">Your cart is empty. Add something from the catalog.</p>
+    </div>
+
+    <div class="cart-footer">
+      <dl class="totals">
+        <div><dt>Subtotal</dt><dd id="cart-subtotal">$0.00</dd></div>
+        <div><dt>Shipping</dt><dd id="cart-shipping">$0.00</dd></div>
+        <div><dt>Tax (8%)</dt><dd id="cart-tax">$0.00</dd></div>
+        <div class="totals-grand"><dt>Total</dt><dd id="cart-total">$0.00</dd></div>
+      </dl>
+      <button type="button" class="btn btn-primary btn-block" id="checkout-btn" disabled>Checkout</button>
+      <p class="cart-note">Free shipping over $100 · Simulated checkout only</p>
+    </div>
+  </aside>
+
+  <!-- Checkout modal -->
+  <div class="modal-backdrop" id="checkout-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="checkout-heading" id="checkout-modal">
+      <button type="button" class="icon-btn modal-close" id="checkout-close" aria-label="Close checkout">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div id="checkout-form-view">
+        <h2 id="checkout-heading">Checkout</h2>
+        <p class="modal-copy">This is a simulated checkout — no payment is processed.</p>
+        <form id="checkout-form" class="checkout-form" novalidate>
+          <div class="field">
+            <label for="checkout-name">Full name</label>
+            <input type="text" id="checkout-name" name="name" required minlength="2" autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="checkout-email">Email</label>
+            <input type="email" id="checkout-email" name="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="checkout-address">Shipping address</label>
+            <textarea id="checkout-address" name="address" rows="3" required minlength="8" autocomplete="street-address"></textarea>
+          </div>
+          <p class="checkout-total-line">Order total: <strong id="checkout-total-label">$0.00</strong></p>
+          <button type="submit" class="btn btn-primary btn-block">Place order</button>
+        </form>
+      </div>
+      <div id="checkout-success-view" hidden>
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <h2>Order confirmed</h2>
+        <p class="modal-copy" id="checkout-success-copy"></p>
+        <button type="button" class="btn btn-primary btn-block" id="checkout-done">Continue shopping</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    <span id="toast-message"></span>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
