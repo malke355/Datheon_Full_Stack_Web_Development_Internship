@@ -1,8 +1,8 @@
 # Live Demo
 
-**Live site:** _Coming soon — replace this URL after you deploy_
+**Live site:** _Coming soon — paste your Vercel URL here after deploy_
 
-Local demo (with your own API key): [http://127.0.0.1:8083](http://127.0.0.1:8083)
+Local demo: [http://127.0.0.1:8083](http://127.0.0.1:8083) (`npm start`)
 
 ---
 
@@ -138,7 +138,14 @@ task3-weather-forecast/
 ├── index.html          # Page structure + theme FOUC guard
 ├── style.css           # Layout, light/dark, sky moods
 ├── script.js           # Search, fetch, render, theme
-├── server.js           # Static hosting + OpenWeatherMap proxy
+├── server.js           # Local: static hosting + API proxy
+├── api/                # Vercel serverless routes
+│   ├── weather.js      # GET /api/weather
+│   ├── forecast.js     # GET /api/forecast
+│   └── health.js       # GET /api/health
+├── lib/
+│   └── owm.js          # Shared OpenWeatherMap helper
+├── vercel.json         # Static index rewrite for Vercel
 ├── package.json        # npm start → node server.js
 ├── package-lock.json
 ├── .env.example        # Safe placeholder (committed)
@@ -197,15 +204,40 @@ Open **[http://127.0.0.1:8083](http://127.0.0.1:8083)** → search a city (try `
 
 ---
 
-## Deploy notes
+## Deploy — Vercel (recommended)
 
-Static-only hosts (plain GitHub Pages / Vercel with no server) cannot hide the key. To go live you typically:
+Atmos is **not** a pure static site. `/api/*` must run as serverless functions (included in `api/`). If you deploy the wrong Root Directory or skip the env var, Vercel shows **404 NOT_FOUND**.
 
-1. Deploy the Node app (or serverless functions that wrap the same proxy logic)  
-2. Set `OPENWEATHER_API_KEY` in the host’s environment dashboard  
-3. Paste the public URL into **Live Demo** above  
+### Correct Vercel settings
 
-Vercel / Railway / Render all work if the start command is `npm start` and the env var is set.
+1. Import **`malke355/Datheon_Full_Stack_Web_Development_Internship`**
+2. **Root Directory** → `task3-weather-forecast`  
+   *(Do not leave this as the repo root — that causes NOT_FOUND.)*
+3. **Framework Preset** → **Other**
+4. **Build Command** → leave empty  
+5. **Output Directory** → leave empty  
+6. **Install Command** → `npm install` (default is fine)
+7. **Environment Variables** → add:
+
+   | Name | Value |
+   | --- | --- |
+   | `OPENWEATHER_API_KEY` | your OpenWeatherMap key |
+
+8. Deploy → open the URL → search a city  
+9. Paste the production URL into **Live Demo** at the top of this README
+
+### Redeploy after changing env
+
+If you add `OPENWEATHER_API_KEY` after the first deploy, click **Redeploy** so the functions pick it up.
+
+### Local vs Vercel
+
+| Environment | How `/api/*` runs |
+| --- | --- |
+| Local (`npm start`) | `server.js` proxy |
+| Vercel | `api/weather.js`, `api/forecast.js`, `api/health.js` |
+
+GitHub Pages alone cannot host the API proxy securely — use Vercel (or similar) for Task 3.
 
 ---
 

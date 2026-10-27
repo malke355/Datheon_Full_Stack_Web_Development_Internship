@@ -1,7 +1,9 @@
 /**
  * Atmos local server
  * - Serves the static HTML/CSS/JS app
- * - Proxies OpenWeatherMap requests so OPENWEATHER_API_KEY stays on the server
+ * - Proxies OpenWeatherMap so OPENWEATHER_API_KEY stays on the server
+ *
+ * On Vercel, /api/* is handled by the serverless files in ./api instead.
  */
 require("dotenv").config();
 
@@ -9,10 +11,9 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { URL } = require("url");
+const { getApiKey, fetchOpenWeather } = require("./lib/owm");
 
 const PORT = Number(process.env.PORT) || 8083;
-const API_KEY = (process.env.OPENWEATHER_API_KEY || "").trim();
-const OWM_BASE = "https://api.openweathermap.org/data/2.5";
 const ROOT = __dirname;
 
 const MIME = {
@@ -25,23 +26,25 @@ const MIME = {
   ".ico": "image/x-icon",
 };
 
-/** Send a JSON response */
 function sendJson(res, status, body) {
-  const payload = JSON.stringify(body);
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
   });
-  res.end(payload);
+  res.end(JSON.stringify(body));
 }
 
-/** Serve a file from this folder (index.html for "/") */
 function serveStatic(req, res, pathname) {
   const relative = pathname === "/" ? "/index.html" : pathname;
   const filePath = path.normalize(path.join(ROOT, decodeURIComponent(relative)));
+  const asPosix = filePath.replace(/\\/g, "/");
 
-  // Block path traversal outside this folder
-  if (!filePath.startsWith(ROOT)) {
+  // Block path traversal and secrets
+  if (
+    !filePath.startsWith(ROOT) ||
+    asPosix.includes("/node_modules/") ||
+    /\/\.env(\.|$)/.test(asPosix)
+  ) {
     res.writeHead(403);
     res.end("Forbidden");
     return;
@@ -59,43 +62,15 @@ function serveStatic(req, res, pathname) {
   });
 }
 
-/**
- * Proxy OpenWeatherMap: /api/weather?q=City or /api/forecast?q=City
- * The browser never sees OPENWEATHER_API_KEY.
- */
 async function proxyWeather(res, endpoint, city) {
-  if (!API_KEY) {
-    sendJson(res, 500, {
-      message:
-        "Server missing OPENWEATHER_API_KEY. Copy .env.example to .env and add your key.",
-    });
-    return;
-  }
-
-  if (!city) {
-    sendJson(res, 400, { message: "Missing city query (?q=City)." });
-    return;
-  }
-
-  const url = `${OWM_BASE}/${endpoint}?q=${encodeURIComponent(city)}&units=metric&appid=${encodeURIComponent(API_KEY)}`;
-
   try {
-    const upstream = await fetch(url);
-    const data = await upstream.json();
-
-    if (!upstream.ok) {
-      sendJson(res, upstream.status, {
-        message: data.message || `OpenWeatherMap error (${upstream.status})`,
-        cod: data.cod,
-      });
-      return;
-    }
-
+    const data = await fetchOpenWeather(endpoint, city);
     sendJson(res, 200, data);
   } catch (error) {
-    sendJson(res, 502, {
-      message: "Could not reach OpenWeatherMap. Check your network and try again.",
-      detail: error.message,
+    sendJson(res, error.status || 502, {
+      message: error.message || "Weather request failed",
+      cod: error.cod,
+      detail: error.detail,
     });
   }
 }
@@ -103,22 +78,22 @@ async function proxyWeather(res, endpoint, city) {
 const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
   const { pathname, searchParams } = requestUrl;
+  const city = (searchParams.get("q") || "").trim();
 
   if (pathname === "/api/weather") {
-    proxyWeather(res, "weather", (searchParams.get("q") || "").trim());
+    proxyWeather(res, "weather", city);
     return;
   }
 
   if (pathname === "/api/forecast") {
-    proxyWeather(res, "forecast", (searchParams.get("q") || "").trim());
+    proxyWeather(res, "forecast", city);
     return;
   }
 
-  // Health check used by the UI to confirm the server (and key) are ready
   if (pathname === "/api/health") {
     sendJson(res, 200, {
       ok: true,
-      hasApiKey: Boolean(API_KEY),
+      hasApiKey: Boolean(getApiKey()),
     });
     return;
   }
@@ -128,7 +103,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`Atmos running at http://127.0.0.1:${PORT}`);
-  if (!API_KEY) {
+  if (!getApiKey()) {
     console.warn(
       "Warning: OPENWEATHER_API_KEY is empty. Add it to task3-weather-forecast/.env"
     );
