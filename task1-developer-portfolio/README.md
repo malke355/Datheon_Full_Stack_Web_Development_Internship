@@ -1,38 +1,42 @@
 # Live Demo
 
-**Live site:** _Coming soon — replace this URL after you deploy_
+> **Status:** Not deployed yet — replace the URL below after you publish.
 
-Example placeholders:
+**Live site:** `https://YOUR-DEMO-URL-HERE` _(placeholder)_
 
-- GitHub Pages: `https://<your-username>.github.io/<your-repo>/task1-developer-portfolio/`
-- Vercel / Netlify: `https://<your-project>.vercel.app` (or Netlify URL), with root set to `task1-developer-portfolio/`
+Expected URLs once live:
+
+| Host | Typical URL |
+| --- | --- |
+| GitHub Pages | `https://malke355.github.io/Datheon_Full_Stack_Web_Development_Internship/task1-developer-portfolio/` |
+| Vercel | `https://<project-name>.vercel.app` (Root Directory = `task1-developer-portfolio`) |
 
 ---
 
-# Melkamu Teshome — Personal Developer Portfolio
+# Task 1 — Personal Developer Portfolio
 
-A static personal portfolio and project showcase for **Melkamu Teshome**, an aspiring full stack developer. Built with plain HTML5, CSS3, and vanilla JavaScript (ES6+) — no frameworks and no build step. Suitable for GitHub Pages, Vercel, or Netlify.
+Static personal portfolio for **Melkamu Teshome**, built for the Datheon Full Stack Web Development Internship. Plain HTML, CSS, and vanilla JavaScript — no frameworks, no build step.
 
-> **Placeholder contacts:** Replace `melkamu@example.com`, `https://github.com/melkamu`, and `https://linkedin.com/in/melkamu` with your real email and profiles before sharing publicly. Update the same values in `index.html`, `script.js` (project links), and this README.
+> **Before sharing publicly:** swap placeholder contacts (`melkamu@example.com`, GitHub, LinkedIn) in `index.html`, `script.js`, and this README.
 
 ## Overview
 
-The site presents a sticky navigation header, hero introduction, about section with resume download, grouped skills, featured projects driven by a JavaScript data array (with accessible detail modals), a validated contact form, and a footer with social links. Light and dark themes are supported and persisted in `localStorage`.
+A single-page portfolio with sticky navigation, hero intro, about + resume download, grouped skills, JS-driven project cards with accessible detail modals, a validated contact form, and light/dark theme persistence. Designed mobile-first and ready for GitHub Pages or Vercel from this folder.
 
 ## Features
 
-- Sticky header with logo, section links, theme toggle, and mobile hamburger menu
-- Hero with name, title, tagline, and primary CTAs
-- About section with profile image and downloadable placeholder resume (PDF)
-- Skills grouped into Frontend, Backend, and Tools (CSS Grid cards)
-- Featured projects rendered from a JS array, with accessible modals (close via X, Escape, or backdrop)
-- Contact details plus client-side form validation (name, email, message)
-- Dark / light theme via CSS variables; respects `prefers-color-scheme` on first visit
-- Smooth scrolling and active nav highlighting on scroll
-- IntersectionObserver scroll-reveal animations (respects reduced motion)
-- Accessibility: skip link, alt text, ARIA labels, focus states, keyboard-friendly modal
-- SEO basics: title, meta description, viewport, Open Graph tags
-- Mobile-first layout with breakpoints at 375 / 768 / 1024 / 1440
+- Sticky header — logo, section links, theme toggle, mobile hamburger
+- Hero — name, title, tagline, primary CTAs
+- About — profile image + downloadable resume PDF
+- Skills — Frontend, Backend, and Tools (CSS Grid)
+- Projects — rendered from a JS data array with accessible detail modals (X, Escape, backdrop)
+- Contact — details + client-side validation (name, email, message)
+- Theming — light/dark via CSS variables; first visit respects `prefers-color-scheme`
+- Navigation — smooth scroll + active link highlighting
+- Motion — IntersectionObserver scroll reveals (honors reduced motion)
+- Accessibility — skip link, alt text, ARIA, focus states, keyboard-friendly modal
+- SEO basics — title, meta description, viewport, Open Graph tags
+- Responsive — breakpoints at 375 / 768 / 1024 / 1440
 
 ## Tech Stack
 
@@ -42,9 +46,9 @@ The site presents a sticky navigation header, hero introduction, about section w
 | Styles | CSS3 (Flexbox, Grid, custom properties) |
 | Behavior | Vanilla JavaScript (ES6+) |
 | Fonts | Google Fonts — Syne, Atkinson Hyperlegible |
-| Assets | SVG placeholders + minimal PDF resume |
+| Assets | SVG placeholders + PDF resume |
 
-No npm, bundlers, or frameworks required.
+No npm, bundlers, or frameworks.
 
 ## Folder Structure
 
@@ -65,53 +69,66 @@ task1-developer-portfolio/
     └── resume-placeholder.pdf
 ```
 
+Paths in this README are relative to this folder inside the monorepo.
+
 ## Run Locally
 
-Because this is a static site, any local static server works. From the repository root:
+From the **repository root**:
 
 ```bash
-# Python 3
 cd task1-developer-portfolio
 python3 -m http.server 8080
 ```
 
-Then open `http://127.0.0.1:8080` in your browser.
+Open [http://127.0.0.1:8080](http://127.0.0.1:8080).
 
-Alternatively, open `index.html` directly in a browser (some features such as module-less relative paths still work; a local server is preferred).
+You can open `index.html` directly in a browser; a local static server is preferred.
 
-## Deploy — GitHub Pages (step by step)
+## Deploy — GitHub Pages
 
-1. Push this repository to GitHub (if it is not already remote).
-2. In the repo on GitHub, open **Settings → Pages**.
+This site lives in a subfolder, so Pages must serve that path (or publish only this folder).
+
+1. Push the latest `main` (or your deploy branch) to GitHub.
+2. Open the repo → **Settings → Pages**.
 3. Under **Build and deployment**, set **Source** to **Deploy from a branch**.
-4. Choose the branch that contains this folder (for example `main`) and folder **/ (root)** if you move the site to the repo root, **or** keep the site in `task1-developer-portfolio/` and either:
-   - set the Pages root to that folder if your host supports a subfolder, or
-   - use a GitHub Action / `gh-pages` branch that publishes only `task1-developer-portfolio/`.
-5. Save. After a few minutes, visit the Pages URL and append `/task1-developer-portfolio/` if the site lives in that subfolder.
-6. Update the **Live Demo** URL at the top of this README and the Open Graph `og:url` in `index.html`.
+4. Select branch `main` and folder **/ (root)**, then save.
+5. Wait a few minutes, then open:
 
-## Deploy — Vercel (step by step)
+   `https://malke355.github.io/Datheon_Full_Stack_Web_Development_Internship/task1-developer-portfolio/`
 
-1. Sign in at [vercel.com](https://vercel.com) and import the GitHub repository.
+6. Paste that URL into **Live Demo** above and update `og:url` in `index.html`.
+
+**Optional — publish only this folder** (cleaner root URL): use a GitHub Action or a `gh-pages` branch that copies `task1-developer-portfolio/` to the Pages publish root, then set Pages to that branch.
+
+## Deploy — Vercel
+
+1. Sign in at [vercel.com](https://vercel.com) and **Import** this GitHub repository.
 2. Set **Root Directory** to `task1-developer-portfolio`.
-3. Leave the framework preset as **Other** (no build command).
-4. Output / publish directory can remain the root of that folder (static files as-is).
-5. Deploy. Copy the production URL into the **Live Demo** section above and into `og:url` in `index.html`.
+3. Framework Preset: **Other** (no build command).
+4. Leave the output as the folder root (static files as-is).
+5. Deploy, then copy the production URL into **Live Demo** and `og:url` in `index.html`.
 
-Netlify follows the same idea: set the publish directory to `task1-developer-portfolio` with no build command.
+Netlify is the same idea: publish directory = `task1-developer-portfolio`, no build command.
 
 ## Screenshots
 
-Add screenshots after deploy (optional but recommended for reviewers):
+Add images after deploy (optional for reviewers):
 
-| Viewport | File suggestion |
+| Viewport | Suggested file |
 | --- | --- |
 | Desktop (light) | `assets/screenshot-desktop-light.png` |
 | Desktop (dark) | `assets/screenshot-desktop-dark.png` |
 | Mobile | `assets/screenshot-mobile.png` |
 
-Until screenshots are captured, open the live demo or run locally and resize the browser to 375px / 768px / 1024px / 1440px to verify layout.
+Until then, run locally or open the live demo and check 375px / 768px / 1024px / 1440px.
+
+```markdown
+<!-- After capture, embed like this: -->
+![Desktop light](assets/screenshot-desktop-light.png)
+![Desktop dark](assets/screenshot-desktop-dark.png)
+![Mobile](assets/screenshot-mobile.png)
+```
 
 ## License
 
-Prepared for the Datheon Full Stack Web Development Internship — Task 1. Content placeholders are fictional where noted; replace before production use.
+Prepared for the Datheon Full Stack Web Development Internship — Task 1. Replace fictional placeholders before production use.
