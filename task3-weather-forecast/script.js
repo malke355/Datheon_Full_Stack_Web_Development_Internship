@@ -297,7 +297,7 @@ async function loadWeather(city) {
       );
     } else if (status === 500 && /OPENWEATHER_API_KEY/i.test(error.message || "")) {
       showStatus(
-        "Server is missing OPENWEATHER_API_KEY. Add it to .env and restart npm start.",
+        "Server is missing OPENWEATHER_API_KEY. Add it in .env (local) or Vercel Environment Variables, then redeploy.",
         { isError: true }
       );
     } else if (!navigator.onLine) {
@@ -332,13 +332,13 @@ async function checkServerHealth() {
     const health = await fetchJson("/api/health");
     if (!health.hasApiKey) {
       showStatus(
-        "Add OPENWEATHER_API_KEY to .env (see .env.example), then restart the server.",
+        "OPENWEATHER_API_KEY is not set on this server. Add it in .env (local) or Vercel env vars, then redeploy.",
         { isError: true }
       );
     }
   } catch (_) {
     showStatus(
-      "Start the app with npm start from task3-weather-forecast (local proxy required).",
+      "Could not reach the weather API. For local use run npm start; on Vercel check the deployment.",
       { isError: true }
     );
   }

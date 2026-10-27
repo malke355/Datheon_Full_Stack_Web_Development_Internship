@@ -1,6 +1,6 @@
 # Live Demo
 
-**Live site:** [https://task3-weather-forecast-alpha.vercel.app/](https://task3-weather-forecast-alpha.vercel.app/)
+**Live site:** [https://weathertask3.vercel.app/](https://weathertask3.vercel.app/)
 
 Deployed on Vercel (Root Directory = `task3-weather-forecast`, serverless `/api/*`).
 
