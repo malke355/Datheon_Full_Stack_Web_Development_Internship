@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Taskflow — a dynamic task manager and productivity tracker with categories, due dates, filters, search, and drag-and-drop." />
+  <meta name="theme-color" id="meta-theme-color" content="#0F2E2F" />
+  <title>Taskflow | Task Manager &amp; Productivity Tracker</title>
+
+  <script>
+    (function () {
+      try {
+        var key = "taskflow.theme.v1";
+        var stored = localStorage.getItem(key);
+        var theme =
+          stored === "light" || stored === "dark"
+            ? stored
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">TF</span>
+        <div class="brand-text">
+          <h1 class="brand-name">Taskflow</h1>
+          <p class="brand-tagline">Plan · Track · Finish</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <p class="header-meta" id="task-summary" aria-live="polite">0 tasks</p>
+        <button
+          type="button"
+          class="theme-toggle"
+          id="theme-toggle"
+          aria-label="Toggle color theme"
+          title="Toggle theme"
+        >
+          <span class="theme-icon theme-icon--sun" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </span>
+          <span class="theme-icon theme-icon--moon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z"/></svg>
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main" class="app-main">
+      <section class="composer" aria-labelledby="composer-heading">
+        <h2 id="composer-heading" class="section-title">Add a task</h2>
+        <form id="task-form" class="task-form" novalidate>
+          <div class="field field--grow">
+            <label for="task-title">Title</label>
+            <input
+              type="text"
+              id="task-title"
+              name="title"
+              placeholder="What needs doing?"
+              maxlength="120"
+              required
+              autocomplete="off"
+            />
+            <p class="field-error" id="title-error" hidden>Enter a task title.</p>
+          </div>
+
+          <div class="field">
+            <label for="task-category">Category</label>
+            <select id="task-category" name="category" required>
+              <option value="Work">Work</option>
+              <option value="Personal">Personal</option>
+              <option value="Study">Study</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="task-due">Due date</label>
+            <input type="date" id="task-due" name="dueDate" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="submit-btn">Add task</button>
+            <button type="button" class="btn btn-ghost" id="cancel-edit" hidden>Cancel edit</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="toolbar" aria-label="Search and filters">
+        <div class="field field--search">
+          <label for="task-search">Quick search</label>
+          <input
+            type="search"
+            id="task-search"
+            name="search"
+            placeholder="Search title or category…"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="filter-group" role="group" aria-label="Filter by status">
+          <button type="button" class="filter-btn is-active" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" class="filter-btn" data-filter="active" aria-pressed="false">Active</button>
+          <button type="button" class="filter-btn" data-filter="completed" aria-pressed="false">Completed</button>
+        </div>
+
+        <div class="field field--inline">
+          <label for="category-filter">Category filter</label>
+          <select id="category-filter">
+            <option value="all">All categories</option>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+            <option value="Study">Study</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="task-board" aria-labelledby="list-heading">
+        <div class="list-header">
+          <h2 id="list-heading" class="section-title">Your tasks</h2>
+          <p class="hint" id="dnd-hint">Drag the handle to reorder. Changes save automatically.</p>
+        </div>
+
+        <ul id="task-list" class="task-list" aria-live="polite"></ul>
+
+        <p id="empty-state" class="empty-state" hidden>
+          No tasks match this view. Add one above, or clear search and filters.
+        </p>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>Taskflow · Datheon Internship Task 2 · Data stays in your browser (<code>localStorage</code>)</p>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
