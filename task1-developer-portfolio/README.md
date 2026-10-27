@@ -1,15 +1,8 @@
 # Live Demo
 
-> **Status:** Not deployed yet — replace the URL below after you publish.
+**Live site:** [https://task1developerportfolio.vercel.app/](https://task1developerportfolio.vercel.app/)
 
-**Live site:** `https://YOUR-DEMO-URL-HERE` _(placeholder)_
-
-Expected URLs once live:
-
-| Host | Typical URL |
-| --- | --- |
-| GitHub Pages | `https://malke355.github.io/Datheon_Full_Stack_Web_Development_Internship/task1-developer-portfolio/` |
-| Vercel | `https://<project-name>.vercel.app` (Root Directory = `task1-developer-portfolio`) |
+Deployed on Vercel (Root Directory = `task1-developer-portfolio`).
 
 ---
 
