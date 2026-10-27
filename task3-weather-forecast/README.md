@@ -1,6 +1,8 @@
 # Live Demo
 
-**Live site:** _Coming soon — paste your Vercel URL here after deploy_
+**Live site:** [https://task3-weather-forecast-alpha.vercel.app/](https://task3-weather-forecast-alpha.vercel.app/)
+
+Deployed on Vercel (Root Directory = `task3-weather-forecast`, serverless `/api/*`).
 
 Local demo: [http://127.0.0.1:8083](http://127.0.0.1:8083) (`npm start`)
 
