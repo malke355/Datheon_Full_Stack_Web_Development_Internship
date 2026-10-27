@@ -4,6 +4,7 @@
    ========================================================================== */
 
 const STORAGE_KEY = "taskflow.tasks.v1";
+const THEME_KEY = "taskflow.theme.v1";
 const CATEGORIES = ["Work", "Personal", "Study"];
 
 /** @type {Array<{id:string,title:string,category:string,dueDate:string|null,completed:boolean,createdAt:number,order:number}>} */
@@ -29,8 +30,56 @@ const els = {
   empty: document.getElementById("empty-state"),
   summary: document.getElementById("task-summary"),
   toast: document.getElementById("toast"),
+  themeToggle: document.getElementById("theme-toggle"),
+  metaThemeColor: document.getElementById("meta-theme-color"),
   filterBtns: Array.from(document.querySelectorAll(".filter-btn")),
 };
+
+/* --------------------------------------------------------------------------
+   Theme
+   -------------------------------------------------------------------------- */
+function getPreferredTheme() {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+  } catch (_) {
+    /* ignore */
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const nextLabel =
+    theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+  els.themeToggle?.setAttribute("aria-label", nextLabel);
+  els.themeToggle?.setAttribute("title", nextLabel);
+
+  const themeColor =
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--theme-color")
+      .trim() || (theme === "dark" ? "#0b1416" : "#0f2e2f");
+  els.metaThemeColor?.setAttribute("content", themeColor);
+}
+
+function initTheme() {
+  applyTheme(getPreferredTheme());
+  els.themeToggle?.addEventListener("click", () => {
+    const next =
+      document.documentElement.getAttribute("data-theme") === "dark"
+        ? "light"
+        : "dark";
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch (_) {
+      /* ignore */
+    }
+    applyTheme(next);
+    showToast(next === "dark" ? "Dark theme on" : "Light theme on");
+  });
+}
 
 /* --------------------------------------------------------------------------
    Persistence
@@ -518,6 +567,7 @@ function seedIfEmpty() {
    Init
    -------------------------------------------------------------------------- */
 function init() {
+  initTheme();
   tasks = loadFromLocalStorage();
   seedIfEmpty();
   bindEvents();

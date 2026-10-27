@@ -27,7 +27,8 @@ Taskflow lets you create, edit, complete, and delete tasks; organize them by **W
 - Category filter dropdown
 - Quick search across title and category
 - Drag-and-drop reordering (grip handle); order persists
-- `localStorage` persistence (survives reload)
+- `localStorage` persistence for tasks (survives reload)
+- Light / dark theme via CSS variables; toggle in the header; choice persisted in `localStorage`, with `prefers-color-scheme` on first visit
 - Completion and exit animations (CSS transitions; respects `prefers-reduced-motion`)
 - Accessible labels, focus styles, skip link, Escape to cancel edit
 - Mobile-friendly layout
