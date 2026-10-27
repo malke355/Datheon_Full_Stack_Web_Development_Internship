@@ -25,10 +25,13 @@ Taskflow lets you create, edit, complete, and delete tasks; organize them by **W
 - Mark complete or incomplete (checkbox)
 - Status filters: All, Active, Completed
 - Category filter dropdown
-- Quick search across title and category
-- Drag-and-drop reordering (grip handle); order persists
+- Quick search across title and category (search + filters persist in `localStorage`)
+- Drag-and-drop reordering plus ↑/↓ buttons for touch/keyboard
+- Delete confirmation with short Undo toast
+- Clear completed (confirmed); Export / Import JSON backup (local only)
 - `localStorage` persistence for tasks (survives reload)
 - Light / dark theme via CSS variables; toggle in the header; choice persisted in `localStorage`, with `prefers-color-scheme` on first visit
+- Due dates cannot be set in the past (`min` + JS validation)
 - Completion and exit animations (CSS transitions; respects `prefers-reduced-motion`)
 - Accessible labels, focus styles, skip link, Escape to cancel edit
 - Mobile-friendly layout

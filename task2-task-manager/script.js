@@ -5,7 +5,11 @@
 
 const STORAGE_KEY = "taskflow.tasks.v1";
 const THEME_KEY = "taskflow.theme.v1";
+const UI_KEY = "taskflow.ui.v1";
 const CATEGORIES = ["Work", "Personal", "Study"];
+const TOAST_GAP_MS = 220;
+const TOAST_DEFAULT_MS = 2200;
+const TOAST_UNDO_MS = 4500;
 
 /** @type {Array<{id:string,title:string,category:string,dueDate:string|null,completed:boolean,createdAt:number,order:number}>} */
 let tasks = [];
@@ -14,7 +18,14 @@ let currentFilter = "all"; // all | active | completed
 let currentCategory = "all";
 let searchQuery = "";
 let editingId = null;
-let toastTimer = null;
+let listReady = false;
+
+/** @type {Array<{message:string,actionLabel?:string,onAction?:Function|null,duration:number}>} */
+const toastQueue = [];
+let toastBusy = false;
+let toastHideTimer = null;
+let toastGapTimer = null;
+let toastActionHandler = null;
 
 const els = {
   form: document.getElementById("task-form"),
@@ -22,6 +33,7 @@ const els = {
   category: document.getElementById("task-category"),
   due: document.getElementById("task-due"),
   titleError: document.getElementById("title-error"),
+  dueError: document.getElementById("due-error"),
   submitBtn: document.getElementById("submit-btn"),
   cancelEdit: document.getElementById("cancel-edit"),
   search: document.getElementById("task-search"),
@@ -30,8 +42,14 @@ const els = {
   empty: document.getElementById("empty-state"),
   summary: document.getElementById("task-summary"),
   toast: document.getElementById("toast"),
+  toastMessage: document.getElementById("toast-message"),
+  toastAction: document.getElementById("toast-action"),
   themeToggle: document.getElementById("theme-toggle"),
   metaThemeColor: document.getElementById("meta-theme-color"),
+  clearCompleted: document.getElementById("clear-completed"),
+  exportTasks: document.getElementById("export-tasks"),
+  importTasks: document.getElementById("import-tasks"),
+  importFile: document.getElementById("import-file"),
   filterBtns: Array.from(document.querySelectorAll(".filter-btn")),
 };
 
@@ -82,7 +100,7 @@ function initTheme() {
 }
 
 /* --------------------------------------------------------------------------
-   Persistence
+   Persistence — tasks + UI prefs
    -------------------------------------------------------------------------- */
 function saveToLocalStorage() {
   try {
@@ -106,6 +124,55 @@ function loadFromLocalStorage() {
     console.warn("Could not load tasks:", err);
     return [];
   }
+}
+
+function saveUiPrefs() {
+  try {
+    localStorage.setItem(
+      UI_KEY,
+      JSON.stringify({
+        filter: currentFilter,
+        category: currentCategory,
+        search: searchQuery,
+      })
+    );
+  } catch (_) {
+    /* ignore */
+  }
+}
+
+function loadUiPrefs() {
+  try {
+    const raw = localStorage.getItem(UI_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return;
+
+    if (["all", "active", "completed"].includes(parsed.filter)) {
+      currentFilter = parsed.filter;
+    }
+    if (
+      parsed.category === "all" ||
+      CATEGORIES.includes(parsed.category)
+    ) {
+      currentCategory = parsed.category;
+    }
+    if (typeof parsed.search === "string") {
+      searchQuery = parsed.search;
+    }
+  } catch (_) {
+    /* ignore */
+  }
+}
+
+function applyUiPrefsToControls() {
+  if (els.search) els.search.value = searchQuery;
+  if (els.categoryFilter) els.categoryFilter.value = currentCategory;
+  els.filterBtns.forEach((btn) => {
+    const active = (btn.dataset.filter || "all") === currentFilter;
+    btn.classList.toggle("is-active", active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+  });
 }
 
 function normalizeTask(task, index = 0) {
@@ -159,13 +226,19 @@ function updateTask(id, updates) {
 }
 
 function deleteTask(id) {
-  const before = tasks.length;
-  tasks = tasks.filter((t) => t.id !== id);
-  if (tasks.length !== before) {
-    saveToLocalStorage();
-    return true;
-  }
-  return false;
+  const index = tasks.findIndex((t) => t.id === id);
+  if (index === -1) return null;
+  const [removed] = tasks.splice(index, 1);
+  saveToLocalStorage();
+  return removed;
+}
+
+function restoreTask(snapshot) {
+  if (!snapshot) return;
+  const exists = tasks.some((t) => t.id === snapshot.id);
+  if (exists) return;
+  tasks.push(normalizeTask(snapshot, snapshot.order));
+  saveToLocalStorage();
 }
 
 function toggleComplete(id) {
@@ -189,6 +262,114 @@ function reorderTasks(fromId, toId) {
     task.order = index;
   });
   saveToLocalStorage();
+}
+
+/** Move a task one step in the full ordered list (−1 up, +1 down). */
+function moveTask(id, direction) {
+  const sorted = getOrderedTasks();
+  const index = sorted.findIndex((t) => t.id === id);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= sorted.length) return false;
+
+  const tmp = sorted[index];
+  sorted[index] = sorted[target];
+  sorted[target] = tmp;
+  sorted.forEach((task, i) => {
+    task.order = i;
+  });
+  saveToLocalStorage();
+  return true;
+}
+
+function clearCompletedTasks() {
+  const completed = tasks.filter((t) => t.completed);
+  if (completed.length === 0) {
+    showToast("No completed tasks to clear");
+    return;
+  }
+  const label =
+    completed.length === 1
+      ? "Clear 1 completed task?"
+      : `Clear ${completed.length} completed tasks?`;
+  if (!window.confirm(label)) return;
+
+  tasks = tasks.filter((t) => !t.completed);
+  saveToLocalStorage();
+  if (editingId && completed.some((t) => t.id === editingId)) resetForm();
+  render();
+  showToast(
+    completed.length === 1
+      ? "Cleared 1 completed task"
+      : `Cleared ${completed.length} completed tasks`
+  );
+}
+
+/* --------------------------------------------------------------------------
+   Export / import
+   -------------------------------------------------------------------------- */
+function exportTasksJson() {
+  const payload = {
+    version: 1,
+    app: "taskflow",
+    exportedAt: new Date().toISOString(),
+    tasks: getOrderedTasks(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `taskflow-backup-${todayISODate()}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showToast("Backup downloaded");
+}
+
+function importTasksJson(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || ""));
+      const list = Array.isArray(parsed)
+        ? parsed
+        : parsed && Array.isArray(parsed.tasks)
+          ? parsed.tasks
+          : null;
+      if (!list) {
+        showToast("Import failed — invalid backup file");
+        return;
+      }
+      const normalized = list
+        .filter((t) => t && typeof t === "object" && typeof t.title === "string")
+        .map((t, index) => normalizeTask(t, index));
+
+      if (
+        !window.confirm(
+          `Replace all current tasks with ${normalized.length} from this backup?`
+        )
+      ) {
+        return;
+      }
+
+      tasks = normalized;
+      saveToLocalStorage();
+      resetForm();
+      render();
+      showToast(
+        normalized.length === 1
+          ? "Imported 1 task"
+          : `Imported ${normalized.length} tasks`
+      );
+    } catch (_) {
+      showToast("Import failed — invalid JSON");
+    }
+  };
+  reader.onerror = () => showToast("Import failed — could not read file");
+  reader.readAsText(file);
 }
 
 /* --------------------------------------------------------------------------
@@ -218,7 +399,14 @@ function getVisibleTasks() {
    Rendering
    -------------------------------------------------------------------------- */
 function render() {
+  const scrollY = window.scrollY;
   const visible = getVisibleTasks();
+  const ordered = getOrderedTasks();
+
+  if (listReady) {
+    els.list.classList.add("no-enter-anim");
+  }
+
   els.list.innerHTML = "";
 
   if (visible.length === 0) {
@@ -226,11 +414,24 @@ function render() {
   } else {
     els.empty.hidden = true;
     const fragment = document.createDocumentFragment();
-    visible.forEach((task) => fragment.appendChild(createTaskElement(task)));
+    visible.forEach((task) => {
+      const fullIndex = ordered.findIndex((t) => t.id === task.id);
+      fragment.appendChild(
+        createTaskElement(task, {
+          canMoveUp: fullIndex > 0,
+          canMoveDown: fullIndex >= 0 && fullIndex < ordered.length - 1,
+        })
+      );
+    });
     els.list.appendChild(fragment);
   }
 
   updateSummary();
+  listReady = true;
+
+  requestAnimationFrame(() => {
+    window.scrollTo(0, scrollY);
+  });
 }
 
 function updateSummary() {
@@ -241,28 +442,66 @@ function updateSummary() {
     total === 0 ? "0 tasks" : `${active} active · ${done} done · ${total} total`;
 }
 
-function createTaskElement(task) {
+function createTaskElement(task, { canMoveUp, canMoveDown }) {
   const li = document.createElement("li");
   li.className = `task-item${task.completed ? " is-completed" : ""}`;
   li.dataset.id = task.id;
   li.draggable = false;
 
+  const reorder = document.createElement("div");
+  reorder.className = "reorder-controls";
+
   const handle = document.createElement("button");
   handle.type = "button";
   handle.className = "drag-handle";
-  handle.setAttribute("aria-label", `Reorder “${task.title}”`);
+  handle.setAttribute("aria-label", `Drag to reorder “${task.title}”`);
   handle.title = "Drag to reorder";
   handle.innerHTML =
     '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="5" cy="4" r="1.2" fill="currentColor"/><circle cx="11" cy="4" r="1.2" fill="currentColor"/><circle cx="5" cy="8" r="1.2" fill="currentColor"/><circle cx="11" cy="8" r="1.2" fill="currentColor"/><circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="11" cy="12" r="1.2" fill="currentColor"/></svg>';
   handle.draggable = true;
   wireDrag(handle, li, task.id);
 
+  const moveUp = document.createElement("button");
+  moveUp.type = "button";
+  moveUp.className = "btn-icon btn-move";
+  moveUp.setAttribute("aria-label", `Move “${task.title}” up`);
+  moveUp.title = "Move up";
+  moveUp.disabled = !canMoveUp;
+  moveUp.innerHTML =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 14l6-6 6 6"/></svg>';
+  moveUp.addEventListener("click", () => {
+    if (moveTask(task.id, -1)) {
+      render();
+      showToast("Moved up");
+    }
+  });
+
+  const moveDown = document.createElement("button");
+  moveDown.type = "button";
+  moveDown.className = "btn-icon btn-move";
+  moveDown.setAttribute("aria-label", `Move “${task.title}” down`);
+  moveDown.title = "Move down";
+  moveDown.disabled = !canMoveDown;
+  moveDown.innerHTML =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 10l6 6 6-6"/></svg>';
+  moveDown.addEventListener("click", () => {
+    if (moveTask(task.id, 1)) {
+      render();
+      showToast("Moved down");
+    }
+  });
+
+  reorder.append(handle, moveUp, moveDown);
+
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.className = "task-check";
   checkbox.checked = task.completed;
   checkbox.id = `done-${task.id}`;
-  checkbox.setAttribute("aria-label", `Mark “${task.title}” as ${task.completed ? "incomplete" : "complete"}`);
+  checkbox.setAttribute(
+    "aria-label",
+    `Mark “${task.title}” as ${task.completed ? "incomplete" : "complete"}`
+  );
   checkbox.addEventListener("change", () => {
     const updated = toggleComplete(task.id);
     if (!updated) return;
@@ -275,7 +514,6 @@ function createTaskElement(task) {
     showToast(updated.completed ? "Task completed" : "Task marked active");
     window.setTimeout(() => {
       li.classList.remove("is-completing");
-      // Re-render so status filters apply after animation
       render();
     }, 280);
   });
@@ -293,7 +531,6 @@ function createTaskElement(task) {
   const badge = document.createElement("span");
   badge.className = `badge badge--${task.category.toLowerCase()}`;
   badge.textContent = task.category;
-
   meta.appendChild(badge);
 
   if (task.dueDate) {
@@ -326,19 +563,35 @@ function createTaskElement(task) {
   deleteBtn.title = "Delete";
   deleteBtn.innerHTML =
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
-  deleteBtn.addEventListener("click", () => {
-    li.classList.add("is-exiting");
-    window.setTimeout(() => {
-      deleteTask(task.id);
-      if (editingId === task.id) resetForm();
-      showToast("Task deleted");
-      render();
-    }, 200);
-  });
+  deleteBtn.addEventListener("click", () => requestDeleteTask(task, li));
 
   actions.append(editBtn, deleteBtn);
-  li.append(handle, checkbox, body, actions);
+  li.append(reorder, checkbox, body, actions);
   return li;
+}
+
+function requestDeleteTask(task, li) {
+  if (!window.confirm(`Delete “${task.title}”?`)) return;
+
+  li.classList.add("is-exiting");
+  window.setTimeout(() => {
+    const removed = deleteTask(task.id);
+    if (!removed) {
+      render();
+      return;
+    }
+    if (editingId === task.id) resetForm();
+    render();
+    showToast("Task deleted", {
+      actionLabel: "Undo",
+      duration: TOAST_UNDO_MS,
+      onAction: () => {
+        restoreTask(removed);
+        render();
+        showToast("Task restored");
+      },
+    });
+  }, 180);
 }
 
 function formatDue(dueDate, completed) {
@@ -368,13 +621,67 @@ function formatDue(dueDate, completed) {
 }
 
 function parseDateInput(value) {
-  // value is YYYY-MM-DD from <input type="date">
   const [y, m, d] = value.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
 
 function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function todayISODate() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function refreshDueDateMin() {
+  if (!els.due) return;
+  els.due.min = todayISODate();
+}
+
+function isDueDateBeforeToday(dueDate) {
+  if (!dueDate) return false;
+  const due = startOfDay(parseDateInput(dueDate));
+  if (Number.isNaN(due.getTime())) return true;
+  return due < startOfDay(new Date());
+}
+
+function clearDueError() {
+  if (!els.dueError) return;
+  els.dueError.hidden = true;
+  els.due?.removeAttribute("aria-invalid");
+}
+
+function showDueError(message) {
+  if (els.dueError) {
+    els.dueError.textContent = message;
+    els.dueError.hidden = false;
+  }
+  els.due?.setAttribute("aria-invalid", "true");
+  els.due?.focus();
+  showToast(message);
+}
+
+function initDueMinWatch() {
+  refreshDueDateMin();
+  let lastDay = todayISODate();
+
+  const tick = () => {
+    const day = todayISODate();
+    if (day !== lastDay) {
+      lastDay = day;
+    }
+    refreshDueDateMin();
+  };
+
+  window.setInterval(tick, 60_000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") tick();
+  });
+  window.addEventListener("focus", tick);
 }
 
 /* --------------------------------------------------------------------------
@@ -385,13 +692,14 @@ function wireDrag(handle, item, taskId) {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", taskId);
     item.classList.add("is-dragging");
-    // Firefox needs setData; delay class for smoother ghost
     requestAnimationFrame(() => item.classList.add("is-dragging"));
   });
 
   handle.addEventListener("dragend", () => {
     item.classList.remove("is-dragging");
-    els.list.querySelectorAll(".is-drag-over").forEach((el) => el.classList.remove("is-drag-over"));
+    els.list
+      .querySelectorAll(".is-drag-over")
+      .forEach((el) => el.classList.remove("is-drag-over"));
   });
 
   item.addEventListener("dragover", (event) => {
@@ -421,6 +729,8 @@ function wireDrag(handle, item, taskId) {
    -------------------------------------------------------------------------- */
 function startEdit(task) {
   editingId = task.id;
+  refreshDueDateMin();
+  clearDueError();
   els.title.value = task.title;
   els.category.value = task.category;
   els.due.value = task.dueDate || "";
@@ -439,21 +749,70 @@ function resetForm() {
   els.cancelEdit.hidden = true;
   els.titleError.hidden = true;
   els.title.removeAttribute("aria-invalid");
+  clearDueError();
+  refreshDueDateMin();
 }
 
-function showToast(message) {
+/* --------------------------------------------------------------------------
+   Toast queue
+   -------------------------------------------------------------------------- */
+function showToast(message, options = {}) {
+  toastQueue.push({
+    message,
+    actionLabel: options.actionLabel || "",
+    onAction: options.onAction || null,
+    duration: options.duration || TOAST_DEFAULT_MS,
+  });
+  pumpToast();
+}
+
+function pumpToast() {
+  if (toastBusy || toastQueue.length === 0) return;
+  toastBusy = true;
+  const item = toastQueue.shift();
+
   els.toast.hidden = false;
-  els.toast.textContent = message;
-  els.toast.classList.add("is-visible");
-  window.clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => {
-    els.toast.classList.remove("is-visible");
-    window.setTimeout(() => {
-      if (!els.toast.classList.contains("is-visible")) {
-        els.toast.hidden = true;
-      }
-    }, 280);
-  }, 1800);
+  els.toastMessage.textContent = item.message;
+  toastActionHandler = item.onAction;
+
+  if (item.actionLabel && item.onAction) {
+    els.toastAction.hidden = false;
+    els.toastAction.textContent = item.actionLabel;
+  } else {
+    els.toastAction.hidden = true;
+    els.toastAction.textContent = "Undo";
+  }
+
+  requestAnimationFrame(() => {
+    els.toast.classList.add("is-visible");
+  });
+
+  window.clearTimeout(toastHideTimer);
+  toastHideTimer = window.setTimeout(() => hideToast(), item.duration);
+}
+
+function hideToast() {
+  els.toast.classList.remove("is-visible");
+  window.clearTimeout(toastGapTimer);
+  toastGapTimer = window.setTimeout(() => {
+    if (!els.toast.classList.contains("is-visible")) {
+      els.toast.hidden = true;
+      els.toastAction.hidden = true;
+      toastActionHandler = null;
+    }
+    toastBusy = false;
+    pumpToast();
+  }, TOAST_GAP_MS);
+}
+
+function initToastAction() {
+  els.toastAction?.addEventListener("click", () => {
+    const handler = toastActionHandler;
+    toastActionHandler = null;
+    window.clearTimeout(toastHideTimer);
+    hideToast();
+    if (typeof handler === "function") handler();
+  });
 }
 
 /* --------------------------------------------------------------------------
@@ -462,6 +821,8 @@ function showToast(message) {
 function bindEvents() {
   els.form.addEventListener("submit", (event) => {
     event.preventDefault();
+    refreshDueDateMin();
+
     const title = els.title.value.trim();
     const category = els.category.value;
     const dueDate = els.due.value || null;
@@ -481,6 +842,13 @@ function bindEvents() {
       return;
     }
 
+    if (isDueDateBeforeToday(dueDate)) {
+      showDueError("Due date can’t be in the past. Pick today or a future day.");
+      return;
+    }
+
+    clearDueError();
+
     if (editingId) {
       updateTask(editingId, { title, category, dueDate });
       showToast("Task updated");
@@ -495,6 +863,16 @@ function bindEvents() {
     els.title.focus();
   });
 
+  els.due?.addEventListener("focus", refreshDueDateMin);
+  els.due?.addEventListener("click", refreshDueDateMin);
+  els.due?.addEventListener("change", () => {
+    if (isDueDateBeforeToday(els.due.value || null)) {
+      showDueError("Due date can’t be in the past. Pick today or a future day.");
+    } else {
+      clearDueError();
+    }
+  });
+
   els.cancelEdit.addEventListener("click", () => {
     resetForm();
     showToast("Edit cancelled");
@@ -502,11 +880,13 @@ function bindEvents() {
 
   els.search.addEventListener("input", () => {
     searchQuery = els.search.value;
+    saveUiPrefs();
     render();
   });
 
   els.categoryFilter.addEventListener("change", () => {
     currentCategory = els.categoryFilter.value;
+    saveUiPrefs();
     render();
   });
 
@@ -518,11 +898,20 @@ function bindEvents() {
         b.classList.toggle("is-active", active);
         b.setAttribute("aria-pressed", active ? "true" : "false");
       });
+      saveUiPrefs();
       render();
     });
   });
 
-  // Keyboard: Escape cancels edit
+  els.clearCompleted?.addEventListener("click", clearCompletedTasks);
+  els.exportTasks?.addEventListener("click", exportTasksJson);
+  els.importTasks?.addEventListener("click", () => els.importFile?.click());
+  els.importFile?.addEventListener("change", () => {
+    const file = els.importFile.files && els.importFile.files[0];
+    importTasksJson(file);
+    els.importFile.value = "";
+  });
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && editingId) {
       resetForm();
@@ -536,9 +925,8 @@ function bindEvents() {
    -------------------------------------------------------------------------- */
 function seedIfEmpty() {
   if (tasks.length > 0) return;
-  const today = new Date();
   const iso = (offset) => {
-    const d = new Date(today);
+    const d = new Date();
     d.setDate(d.getDate() + offset);
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -568,6 +956,10 @@ function seedIfEmpty() {
    -------------------------------------------------------------------------- */
 function init() {
   initTheme();
+  initToastAction();
+  initDueMinWatch();
+  loadUiPrefs();
+  applyUiPrefsToControls();
   tasks = loadFromLocalStorage();
   seedIfEmpty();
   bindEvents();
