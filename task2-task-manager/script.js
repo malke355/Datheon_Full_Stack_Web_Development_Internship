@@ -22,6 +22,7 @@ const els = {
   category: document.getElementById("task-category"),
   due: document.getElementById("task-due"),
   titleError: document.getElementById("title-error"),
+  dueError: document.getElementById("due-error"),
   submitBtn: document.getElementById("submit-btn"),
   cancelEdit: document.getElementById("cancel-edit"),
   search: document.getElementById("task-search"),
@@ -377,6 +378,44 @@ function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
+function todayISODate() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/** Keep the date picker’s min at the local calendar day for today. */
+function refreshDueDateMin() {
+  if (!els.due) return;
+  els.due.min = todayISODate();
+}
+
+/** True when dueDate (YYYY-MM-DD) is before today’s local calendar day. */
+function isDueDateBeforeToday(dueDate) {
+  if (!dueDate) return false;
+  const due = startOfDay(parseDateInput(dueDate));
+  if (Number.isNaN(due.getTime())) return true;
+  return due < startOfDay(new Date());
+}
+
+function clearDueError() {
+  if (!els.dueError) return;
+  els.dueError.hidden = true;
+  els.due?.removeAttribute("aria-invalid");
+}
+
+function showDueError(message) {
+  if (els.dueError) {
+    els.dueError.textContent = message;
+    els.dueError.hidden = false;
+  }
+  els.due?.setAttribute("aria-invalid", "true");
+  els.due?.focus();
+  showToast(message);
+}
+
 /* --------------------------------------------------------------------------
    Drag and drop (reorder)
    -------------------------------------------------------------------------- */
@@ -421,8 +460,11 @@ function wireDrag(handle, item, taskId) {
    -------------------------------------------------------------------------- */
 function startEdit(task) {
   editingId = task.id;
+  refreshDueDateMin();
+  clearDueError();
   els.title.value = task.title;
   els.category.value = task.category;
+  // Past due dates still show for existing tasks; save will require today or later.
   els.due.value = task.dueDate || "";
   els.submitBtn.textContent = "Save changes";
   els.cancelEdit.hidden = false;
@@ -439,6 +481,8 @@ function resetForm() {
   els.cancelEdit.hidden = true;
   els.titleError.hidden = true;
   els.title.removeAttribute("aria-invalid");
+  clearDueError();
+  refreshDueDateMin();
 }
 
 function showToast(message) {
@@ -462,6 +506,8 @@ function showToast(message) {
 function bindEvents() {
   els.form.addEventListener("submit", (event) => {
     event.preventDefault();
+    refreshDueDateMin();
+
     const title = els.title.value.trim();
     const category = els.category.value;
     const dueDate = els.due.value || null;
@@ -481,6 +527,13 @@ function bindEvents() {
       return;
     }
 
+    if (isDueDateBeforeToday(dueDate)) {
+      showDueError("Due date can’t be in the past. Pick today or a future day.");
+      return;
+    }
+
+    clearDueError();
+
     if (editingId) {
       updateTask(editingId, { title, category, dueDate });
       showToast("Task updated");
@@ -493,6 +546,16 @@ function bindEvents() {
 
     render();
     els.title.focus();
+  });
+
+  els.due?.addEventListener("focus", refreshDueDateMin);
+  els.due?.addEventListener("click", refreshDueDateMin);
+  els.due?.addEventListener("change", () => {
+    if (isDueDateBeforeToday(els.due.value || null)) {
+      showDueError("Due date can’t be in the past. Pick today or a future day.");
+    } else {
+      clearDueError();
+    }
   });
 
   els.cancelEdit.addEventListener("click", () => {
@@ -568,6 +631,7 @@ function seedIfEmpty() {
    -------------------------------------------------------------------------- */
 function init() {
   initTheme();
+  refreshDueDateMin();
   tasks = loadFromLocalStorage();
   seedIfEmpty();
   bindEvents();
